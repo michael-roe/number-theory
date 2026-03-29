@@ -19,14 +19,19 @@ theorem gcd_sum_diff (m n : ℤ)
   (h_n_even : n % 2 = 0)
   (h_coprime : m.gcd n = 1) :
   (m + n).gcd (m - n) = 1 := by
+
   have h_sum_odd : (m + n) % 2 = 1 := by
     rw [Int.add_emod, h_m_odd, h_n_even]
     norm_num
+
   have h_diff_odd : (m - n) % 2 = 1 := by
     rw [Int.sub_emod, h_m_odd, h_n_even]
     norm_num
+
   let d := (m + n).gcd (m - n)
+
   have hd_dvd_sum : (d : ℤ) ∣ (m + n) := Int.gcd_dvd_left _ _
+
   have hd_dvd_diff : (d : ℤ) ∣ (m - n) := Int.gcd_dvd_right _ _
 
   -- d divides (m + n) + (m - n) = 2*m
@@ -54,11 +59,21 @@ theorem gcd_sum_diff (m n : ℤ)
   simp only [Nat.cast_ofNat, mul_one] at h_d_dvd_gcd
 
   have h_d_dvd_gcd_cast : (d : ℕ) ∣ 2 :=
-    Int.natCast_dvd_natCast h_d_dvd_gcd
+    Int.natCast_dvd_natCast.mp h_d_dvd_gcd
 
   have h_factors_of_two: (d : ℕ) ∣ 2 ↔  d = 1 ∨ d = 2 :=
     Nat.dvd_prime Nat.prime_two
 
-  have h_one_or_two : d = 1 ∨ d = 2 := h_factors_of_two h_d_dvd_gcd_cast
+  have h_one_or_two : d = 1 ∨ d = 2 := h_factors_of_two.mp h_d_dvd_gcd_cast
 
-  sorry;
+  have h_one : d = 1 := by
+    cases h_one_or_two with
+    | inl h => exact h
+    | inr h =>
+      rw [h] at hd_dvd_sum
+      have h_2_dvd : (2 : ℤ) ∣ (m + n) := hd_dvd_sum
+      have : (m + n) % 2 = 0 := Int.emod_eq_zero_of_dvd h_2_dvd
+      rw [this] at h_sum_odd
+      norm_num at h_sum_odd
+
+  exact h_one
